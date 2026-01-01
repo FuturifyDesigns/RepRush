@@ -1,56 +1,62 @@
-import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
-
-// Pages
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 
-// Protected Route Component
+// Protected Route wrapper
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuthStore()
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="spinner"></div>
-      </div>
-    )
+  const { user } = useAuthStore()
+  
+  if (!user) {
+    return <Navigate to="/login" replace />
   }
+  
+  return children
+}
 
-  return user ? children : <Navigate to="/login" />
+// Public Route wrapper (redirect to profile if already logged in)
+function PublicRoute({ children }) {
+  const { user } = useAuthStore()
+  
+  if (user) {
+    return <Navigate to="/profile" replace />
+  }
+  
+  return children
 }
 
 function App() {
-  const { initialize } = useAuthStore()
-
-  // Initialize auth on mount
-  useEffect(() => {
-    initialize()
-  }, [initialize])
-
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/RepRush">
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/profile"
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
           element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
-          }
+          } 
         />
-
-        {/* Catch all - redirect to home */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

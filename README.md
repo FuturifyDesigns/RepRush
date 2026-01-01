@@ -1,6 +1,6 @@
 # UpFit - Level Up Your Fitness 🚀
 
-A gamified fitness tracking Progressive Web Application built with React, Vite, Tailwind CSS, and Supabase.
+A gamified fitness tracking Progressive Web Application built with React, Vite, Tailwind CSS, and Supabase..
 
 ## 🎯 Features
 

@@ -2,35 +2,29 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>RepRush - Redirecting...</title>
+    <title>RepRush</title>
     <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      
-      // For GitHub Pages with a project repository (not username.github.io)
-      // Set segmentCount to 1 to keep the repo name in the path
-      var segmentCount = 1;
-
-      var l = window.location;
-      
-      // Split the pathname and reconstruct properly
-      var pathSegments = l.pathname.split('/').slice(0, segmentCount + 1);
-      var basePath = pathSegments.join('/');
-      var restOfPath = l.pathname.split('/').slice(segmentCount + 1).join('/');
-      
-      // Redirect to base path with encoded rest of path as query param
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        basePath + '/?/' +
-        restOfPath.replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
-
+      // GitHub Pages SPA redirect for /RepRush/ base path
+      (function(){
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        
+        // If we're at /RepRush/something, convert it to /?/something
+        if (path.startsWith('/RepRush/')) {
+          // Remove /RepRush/ prefix
+          var route = path.substring(9); // Remove "/RepRush/"
+          
+          // Redirect to /RepRush/?/route
+          window.location.replace(
+            '/RepRush/?/' + route + 
+            (search ? search.replace(/^\?/, '&').replace(/&/g, '~and~') : '') +
+            hash
+          );
+        }
+      })();
     </script>
   </head>
   <body>
-    <p>Redirecting...</p>
   </body>
 </html>

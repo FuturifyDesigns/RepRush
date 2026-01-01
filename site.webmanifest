@@ -2,18 +2,24 @@
   "name": "RepRush - Gamified Fitness Tracker",
   "short_name": "RepRush",
   "description": "Track workouts, earn XP, level up. Every rep counts!",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/RepRush/",
+  "scope": "/RepRush/",
   "display": "standalone",
   "background_color": "#0A1628",
   "theme_color": "#F97316",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/reprush-favicon.png",
+      "src": "/RepRush/reprush-favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/RepRush/reprush-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

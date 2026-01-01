@@ -43,7 +43,7 @@ export default function Login() {
           {/* Logo - Mobile Responsive */}
           <Link to="/" className="flex flex-col items-center justify-center mb-8 sm:mb-12 group">
             <img 
-              src="/reprush-logo.png" 
+              src={`${import.meta.env.BASE_URL}reprush-logo.png`} 
               alt="RepRush" 
               className="h-24 w-24 sm:h-32 sm:w-32 group-hover:scale-110 transition-transform duration-300 mb-3 sm:mb-4"
             />

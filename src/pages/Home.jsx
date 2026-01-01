@@ -45,7 +45,7 @@ export default function Home() {
         {/* Navigation - Mobile Responsive */}
         <nav className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <img src="/reprush-logo.png" alt="RepRush" className="h-12 w-12 sm:h-16 sm:w-16" />
+            <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="h-12 w-12 sm:h-16 sm:w-16" />
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">RepRush</h1>
               <p className="text-[10px] sm:text-xs text-gray-400 tracking-widest uppercase">Level Up Every Rep</p>
@@ -73,7 +73,7 @@ export default function Home() {
 
             {/* Subheadline */}
             <p className="text-base sm:text-xl md:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto font-light leading-relaxed px-4">
-              Every rep counts. Earn XP, level up, and compete. Turn your workouts into an epic experience.
+              Every rep counts. Earn XP, level up, and compete. Turn your workouts into an epic gaming experience.
             </p>
 
             {/* CTA Button - Mobile Responsive */}
@@ -235,7 +235,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <img src="/reprush-logo.png" alt="RepRush" className="h-5 w-5 sm:h-6 sm:w-6 opacity-50" />
+              <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="h-5 w-5 sm:h-6 sm:w-6 opacity-50" />
               <span>© 2026 RepRush. Built by Futurify Designs.</span>
             </div>
             <div className="flex gap-4 sm:gap-6">

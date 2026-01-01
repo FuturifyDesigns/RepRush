@@ -16,7 +16,7 @@ export default function Profile() {
       <header className="bg-gradient-to-r from-gray-900 to-gray-800 border-b border-white/10 shadow-lg">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
-            <img src="/reprush-logo.png" alt="RepRush" className="w-10 h-10 sm:w-12 sm:h-12" />
+            <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="w-10 h-10 sm:w-12 sm:h-12" />
             <div>
               <h1 className="text-lg sm:text-2xl font-bold text-white">RepRush</h1>
               <p className="text-[10px] sm:text-xs text-gray-400 tracking-widest uppercase">Level Up Every Rep</p>

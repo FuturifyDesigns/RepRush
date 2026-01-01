@@ -1,19 +1,18 @@
 import { create } from 'zustand'
-import { supabase } from '../utils/supabase'
+import { supabase } from '../lib/supabase'
 
 export const useAuthStore = create((set) => ({
   user: null,
-  session: null,
-  loading: true,
+  loading: false,
   error: null,
 
   // Initialize auth state
   initialize: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      set({ session, user: session?.user ?? null, loading: false })
+      set({ user: session?.user || null })
     } catch (error) {
-      set({ error: error.message, loading: false })
+      console.error('Error initializing auth:', error)
     }
   },
 
@@ -25,30 +24,19 @@ export const useAuthStore = create((set) => ({
         email,
         password,
         options: {
-          data: { username }
-        }
+          data: {
+            username,
+          },
+        },
       })
 
       if (error) throw error
 
-      // Create user profile
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email,
-            username
-          })
-
-        if (profileError) throw profileError
-      }
-
-      set({ user: data.user, session: data.session, loading: false })
-      return { data, error: null }
+      set({ user: data.user, loading: false })
+      return { user: data.user, error: null }
     } catch (error) {
       set({ error: error.message, loading: false })
-      return { data: null, error }
+      return { user: null, error: error.message }
     }
   },
 
@@ -58,44 +46,29 @@ export const useAuthStore = create((set) => ({
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       })
 
       if (error) throw error
 
-      set({ user: data.user, session: data.session, loading: false })
-      return { data, error: null }
+      set({ user: data.user, loading: false })
+      return { user: data.user, error: null }
     } catch (error) {
       set({ error: error.message, loading: false })
-      return { data: null, error }
+      return { user: null, error: error.message }
     }
   },
 
   // Logout
   logout: async () => {
-    set({ loading: true })
-    try {
-      await supabase.auth.signOut()
-      set({ user: null, session: null, loading: false })
-    } catch (error) {
-      set({ error: error.message, loading: false })
-    }
-  },
-
-  // Reset password
-  resetPassword: async (email) => {
     set({ loading: true, error: null })
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      const { error } = await supabase.auth.signOut()
       if (error) throw error
-      set({ loading: false })
-      return { error: null }
+
+      set({ user: null, loading: false })
     } catch (error) {
       set({ error: error.message, loading: false })
-      return { error }
     }
   },
-
-  // Clear error
-  clearError: () => set({ error: null })
 }))

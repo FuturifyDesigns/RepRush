@@ -38,6 +38,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          
+      - name: List dist contents
+        run: |
+          echo "=== Contents of dist folder ==="
+          ls -la dist/
+          echo "=== Contents of dist root ==="
+          find dist/ -type f
         
       - name: Setup Pages
         uses: actions/configure-pages@v4

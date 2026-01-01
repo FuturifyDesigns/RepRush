@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- Favicon - Multiple sizes for Google Search and browsers -->
+    <link rel="icon" type="image/x-icon" href="/RepRush/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/RepRush/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/RepRush/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/RepRush/apple-touch-icon.png" />
+    
+    <!-- Android Chrome Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/RepRush/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/RepRush/android-chrome-512x512.png" />
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/RepRush/site.webmanifest" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="RepRush - Gamified fitness tracking app. Track workouts, earn XP, level up, compete on leaderboards. Every rep counts! Rush through your fitness goals." />
+    <meta name="keywords" content="fitness tracker, workout app, gamification, exercise tracking, fitness gamification, rep tracking, XP system, level up fitness, fitness leaderboard, workout logger" />
+    <meta name="author" content="Futurify Designs" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#F97316" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="RepRush" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://futurifydesigns.github.io/RepRush/" />
+    <meta property="og:title" content="RepRush - Level Up Every Rep | Gamified Fitness Tracker" />
+    <meta property="og:description" content="Track workouts, earn XP, level up, and compete on leaderboards. Every rep counts! Rush through your fitness goals with gamified workout tracking." />
+    <meta property="og:image" content="https://futurifydesigns.github.io/RepRush/android-chrome-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:site_name" content="RepRush" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://futurifydesigns.github.io/RepRush/" />
+    <meta name="twitter:title" content="RepRush - Level Up Every Rep" />
+    <meta name="twitter:description" content="Gamified fitness tracking. Track workouts, earn XP, compete on leaderboards. Every rep counts!" />
+    <meta name="twitter:image" content="https://futurifydesigns.github.io/RepRush/android-chrome-512x512.png" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://futurifydesigns.github.io/RepRush/" />
+    
+    <!-- Preconnect to Supabase -->
+    <link rel="preconnect" href="https://ekizrjhpesaspjsgruew.supabase.co" />
+    
+    <title>RepRush - Level Up Every Rep | Gamified Fitness Tracker</title>
+    
+    <!-- Single Page App routing fix for GitHub Pages -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

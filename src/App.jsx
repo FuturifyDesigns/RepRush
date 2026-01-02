@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
+import EmailConfirmed from './pages/EmailConfirmed'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -48,6 +49,7 @@ function App() {
             </PublicRoute>
           } 
         />
+        <Route path="/email-confirmed" element={<EmailConfirmed />} />
         <Route 
           path="/profile" 
           element={

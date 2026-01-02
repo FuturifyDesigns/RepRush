@@ -20,21 +20,23 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Background Slideshow - Using img tags for better mobile support */}
+    <div className="relative min-h-screen">
+      {/* Background Slideshow - Completely fixed using CSS background */}
       <div className="fixed inset-0 z-0">
         {backgroundImages.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-2000 ${
+            className={`fixed inset-0 transition-opacity duration-2000 ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{
+              backgroundImage: `url(${image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed',
+            }}
           >
-            <img 
-              src={image}
-              alt=""
-              className="w-full h-full object-cover object-center"
-            />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
           </div>
         ))}
@@ -220,7 +222,7 @@ export default function Home() {
             </div>
 
             {/* CTA */}
-            <div className="text-center mt-8 sm:mt-12">
+            <div className="text-center mt-8 sm:mt-12 pb-20">
               <Link
                 to="/register"
                 className="inline-block px-8 sm:px-10 lg:px-12 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 shadow-2xl shadow-orange-500/50"
@@ -232,7 +234,7 @@ export default function Home() {
         </div>
 
         {/* Footer - Mobile Responsive */}
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-white/10">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-gray-500">
             <div className="flex items-center gap-2">
               <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="h-5 w-5 sm:h-6 sm:w-6 opacity-50" />
@@ -247,7 +249,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Slideshow Indicators - Mobile Responsive */}
+      {/* Slideshow Indicators - FIXED at bottom of viewport */}
       <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {backgroundImages.map((_, index) => (
           <button
@@ -258,6 +260,7 @@ export default function Home() {
                 ? 'bg-white w-6 sm:w-8' 
                 : 'bg-white/30 hover:bg-white/50'
             }`}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>

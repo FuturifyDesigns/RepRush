@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
+import InstallPrompt from '../components/InstallPrompt'
 
 export default function Profile() {
   const { user, logout } = useAuthStore()
@@ -63,6 +64,9 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-900">
+      {/* Install Prompt for Mobile Users */}
+      <InstallPrompt />
+      
       {/* Hero Section with Background Image */}
       <div className="relative h-80 overflow-hidden">
         {/* Background Image */}

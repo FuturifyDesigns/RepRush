@@ -21,23 +21,45 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background Slideshow - Completely fixed using CSS background */}
-      <div className="fixed inset-0 z-0">
+      {/* Background Slideshow - Using transform3d trick for mobile */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0,
+          transform: 'translateZ(0)', // Force GPU acceleration
+          willChange: 'transform', // Optimize for animations
+        }}
+      >
         {backgroundImages.map((image, index) => (
           <div
             key={index}
-            className={`fixed inset-0 transition-opacity duration-2000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              opacity: index === currentSlide ? 1 : 0,
+              transition: 'opacity 2s ease-in-out',
               backgroundImage: `url(${image})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center center',
+              backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed',
+              transform: 'translate3d(0, 0, 0)', // Force layer
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.6), rgba(0,0,0,0.9))',
+            }} />
           </div>
         ))}
       </div>
@@ -222,7 +244,7 @@ export default function Home() {
             </div>
 
             {/* CTA */}
-            <div className="text-center mt-8 sm:mt-12 pb-20">
+            <div className="text-center mt-8 sm:mt-12 pb-24">
               <Link
                 to="/register"
                 className="inline-block px-8 sm:px-10 lg:px-12 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 shadow-2xl shadow-orange-500/50"
@@ -234,7 +256,7 @@ export default function Home() {
         </div>
 
         {/* Footer - Mobile Responsive */}
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20 border-t border-white/10">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-gray-500">
             <div className="flex items-center gap-2">
               <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="h-5 w-5 sm:h-6 sm:w-6 opacity-50" />
@@ -249,17 +271,31 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Slideshow Indicators - FIXED at bottom of viewport */}
-      <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {/* Slideshow Indicators - Completely FIXED using inline styles */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 20,
+          display: 'flex',
+          gap: '0.5rem',
+        }}
+      >
         {backgroundImages.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentSlide 
-                ? 'bg-white w-6 sm:w-8' 
-                : 'bg-white/30 hover:bg-white/50'
-            }`}
+            style={{
+              width: index === currentSlide ? '2rem' : '0.5rem',
+              height: '0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: index === currentSlide ? 'white' : 'rgba(255, 255, 255, 0.3)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}

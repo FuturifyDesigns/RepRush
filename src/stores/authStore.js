@@ -10,7 +10,12 @@ export const useAuthStore = create((set) => ({
   initialize: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      set({ user: session?.user || null })
+      // Only set user if email is confirmed
+      if (session?.user?.email_confirmed_at) {
+        set({ user: session.user })
+      } else {
+        set({ user: null })
+      }
     } catch (error) {
       console.error('Error initializing auth:', error)
     }
@@ -27,12 +32,14 @@ export const useAuthStore = create((set) => ({
           data: {
             username,
           },
+          emailRedirectTo: 'https://futurifydesigns.github.io/RepRush/email-confirmed',
         },
       })
 
       if (error) throw error
 
-      set({ user: data.user, loading: false })
+      // Don't set user - they need to verify email first
+      set({ loading: false })
       return { user: data.user, error: null }
     } catch (error) {
       set({ error: error.message, loading: false })
@@ -50,6 +57,16 @@ export const useAuthStore = create((set) => ({
       })
 
       if (error) throw error
+
+      // Check if email is verified
+      if (!data.user.email_confirmed_at) {
+        set({ 
+          error: 'Please verify your email before logging in. Check your inbox for the verification link.', 
+          loading: false,
+          user: null
+        })
+        return { user: null, error: 'Email not verified' }
+      }
 
       set({ user: data.user, loading: false })
       return { user: data.user, error: null }

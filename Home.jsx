@@ -21,7 +21,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background Slideshow - Using transform3d trick for mobile */}
+      {/* Background Slideshow - Fixed with better mobile optimization */}
       <div 
         style={{
           position: 'fixed',
@@ -30,8 +30,11 @@ export default function Home() {
           right: 0,
           bottom: 0,
           zIndex: 0,
-          transform: 'translateZ(0)', // Force GPU acceleration
-          willChange: 'transform', // Optimize for animations
+          overflow: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          transform: 'translate3d(0, 0, 0)',
+          WebkitTransform: 'translate3d(0, 0, 0)',
         }}
       >
         {backgroundImages.map((image, index) => (
@@ -49,7 +52,12 @@ export default function Home() {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              transform: 'translate3d(0, 0, 0)', // Force layer
+              backgroundAttachment: 'fixed', // Prevents zoom/glitch on mobile scroll
+              willChange: 'opacity',
+              transform: 'translate3d(0, 0, 0)',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
             }}
           >
             <div style={{
@@ -59,6 +67,8 @@ export default function Home() {
               right: 0,
               bottom: 0,
               background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.6), rgba(0,0,0,0.9))',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
             }} />
           </div>
         ))}
@@ -271,7 +281,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Slideshow Indicators - Completely FIXED using inline styles */}
+      {/* Slideshow Indicators - Fixed at bottom of page, not scrolling */}
       <div 
         style={{
           position: 'fixed',

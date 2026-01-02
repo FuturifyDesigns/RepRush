@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuthStore } from './stores/authStore'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -29,6 +30,13 @@ function PublicRoute({ children }) {
 }
 
 function App() {
+  const { initialize } = useAuthStore()
+
+  // Initialize auth state on app load
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
   return (
     <BrowserRouter basename="/RepRush">
       <Routes>

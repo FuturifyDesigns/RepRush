@@ -3,19 +3,26 @@ import { useAuthStore } from '../stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import InstallPrompt from '../components/InstallPrompt'
+import EditProfileModal from '../components/EditProfileModal'
+import DeleteAccountModal from '../components/DeleteAccountModal'
 
 export default function Profile() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
     loadProfile()
   }, [user])
 
   const loadProfile = async () => {
-    if (!user) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
 
     try {
       const { data, error } = await supabase
@@ -36,6 +43,10 @@ export default function Profile() {
   const handleLogout = async () => {
     await logout()
     navigate('/')
+  }
+
+  const handleProfileUpdate = (updatedProfile) => {
+    setProfile(updatedProfile)
   }
 
   const getNextLevelXP = (level) => {
@@ -66,6 +77,22 @@ export default function Profile() {
     <div className="min-h-screen bg-gray-900">
       {/* Install Prompt for Mobile Users */}
       <InstallPrompt />
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={handleProfileUpdate}
+        />
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <DeleteAccountModal
+          onClose={() => setShowDeleteModal(false)}
+        />
+      )}
       
       {/* Hero Section with Background Image */}
       <div className="relative h-80 overflow-hidden">
@@ -89,12 +116,20 @@ export default function Profile() {
                 <p className="text-xs text-gray-400 uppercase tracking-widest">Dashboard</p>
               </div>
             </div>
-            <button 
-              onClick={handleLogout}
-              className="px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium transition-all duration-300"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium transition-all duration-300 text-sm"
+              >
+                Edit Profile
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium transition-all duration-300"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
@@ -104,11 +139,19 @@ export default function Profile() {
             {/* Avatar with Level Badge at Bottom */}
             <div className="relative">
               <div className={`relative ring-4 ${tier.ring} rounded-full p-1 bg-gray-900`}>
-                <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center`}>
-                  <span className="text-5xl font-black text-white">
-                    {profile?.username?.[0]?.toUpperCase() || 'R'}
-                  </span>
-                </div>
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.username}
+                    className="w-32 h-32 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center`}>
+                    <span className="text-5xl font-black text-white">
+                      {profile?.username?.[0]?.toUpperCase() || 'R'}
+                    </span>
+                  </div>
+                )}
               </div>
               {/* Level Badge - Moved to Bottom */}
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-orange-500 to-red-600 rounded-full border-4 border-gray-900 shadow-lg">
@@ -121,6 +164,11 @@ export default function Profile() {
               <h2 className="text-4xl font-black text-white mb-2">
                 {profile?.username || 'Athlete'}
               </h2>
+              {profile?.bio && (
+                <p className="text-gray-400 text-sm mb-3 max-w-2xl">
+                  {profile.bio}
+                </p>
+              )}
               <div className="flex items-center gap-3">
                 <span className={`px-4 py-1 bg-gradient-to-r ${tier.color} rounded-full text-sm font-bold text-white`}>
                   {tier.name}
@@ -274,6 +322,17 @@ export default function Profile() {
               <p className="text-xs text-gray-500 mt-4 text-center">
                 No activity this week. Start your first workout!
               </p>
+            </div>
+
+            {/* Account Settings */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-white/10">
+              <h3 className="text-xl font-bold text-white mb-4">Account</h3>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg font-medium transition-all text-sm"
+              >
+                Delete Account
+              </button>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthStore } from './stores/authStore'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -31,11 +31,28 @@ function PublicRoute({ children }) {
 
 function App() {
   const { initialize } = useAuthStore()
+  const [initializing, setInitializing] = useState(true)
 
-  // Initialize auth state on app load
+  // Initialize auth state on app load and wait for it to complete
   useEffect(() => {
-    initialize()
+    const initAuth = async () => {
+      await initialize()
+      setInitializing(false)
+    }
+    initAuth()
   }, [initialize])
+
+  // Show loading screen while checking auth
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter basename="/RepRush">

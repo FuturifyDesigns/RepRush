@@ -13,9 +13,16 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const { error } = await login(formData.email, formData.password)
+    const { error: loginError, user } = await login(formData.email, formData.password)
     
-    if (!error) {
+    if (!loginError && user) {
+      // Check if email is verified
+      if (!user.email_confirmed_at) {
+        // Email not verified - show message but don't redirect
+        return
+      }
+      
+      // Email verified - redirect to profile
       navigate('/profile')
     }
   }
@@ -43,7 +50,7 @@ export default function Login() {
           {/* Logo - Mobile Responsive */}
           <Link to="/" className="flex flex-col items-center justify-center mb-8 sm:mb-12 group">
             <img 
-              src={`${import.meta.env.BASE_URL}reprush-logo.png`} 
+              src={`${import.meta.env.BASE_URL}reprush-logo.png`}
               alt="RepRush" 
               className="h-24 w-24 sm:h-32 sm:w-32 group-hover:scale-110 transition-transform duration-300 mb-3 sm:mb-4"
             />

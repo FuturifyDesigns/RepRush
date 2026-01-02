@@ -14,6 +14,7 @@ export default function Register() {
   })
   
   const [formError, setFormError] = useState('')
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -36,7 +37,8 @@ export default function Register() {
     )
     
     if (!error) {
-      navigate('/profile')
+      // Show verification message instead of redirecting
+      setShowVerificationMessage(true)
     }
   }
 
@@ -45,6 +47,98 @@ export default function Register() {
       ...formData,
       [e.target.name]: e.target.value
     })
+  }
+
+  // If verification message should be shown
+  if (showVerificationMessage) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-0 right-0 w-72 h-72 sm:w-96 sm:h-96 bg-orange-500 rounded-full filter blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-red-500 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md">
+            {/* Logo */}
+            <Link to="/" className="flex flex-col items-center justify-center mb-8 sm:mb-12 group">
+              <img 
+                src={`${import.meta.env.BASE_URL}reprush-logo.png`}
+                alt="RepRush" 
+                className="h-24 w-24 sm:h-32 sm:w-32 group-hover:scale-110 transition-transform duration-300 mb-3 sm:mb-4"
+              />
+              <div className="text-center">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">RepRush</h1>
+                <p className="text-[10px] sm:text-xs text-gray-400 tracking-widest uppercase">Level Up Every Rep</p>
+              </div>
+            </Link>
+
+            {/* Success Card */}
+            <div className="glass rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl">
+              {/* Success Icon */}
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-500 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Check Your Email!</h2>
+                <p className="text-sm sm:text-base text-gray-400">
+                  We sent a verification link to
+                </p>
+                <p className="text-base sm:text-lg text-orange-400 font-semibold mt-2">
+                  {formData.email}
+                </p>
+              </div>
+
+              <div className="bg-orange-500/10 border border-orange-500/50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-orange-300 text-center">
+                  Click the link in the email to verify your account before logging in.
+                </p>
+              </div>
+
+              <div className="space-y-3 text-center text-sm text-gray-400">
+                <p>Didn't receive the email?</p>
+                <ul className="space-y-2">
+                  <li>• Check your spam/junk folder</li>
+                  <li>• Make sure you entered the correct email</li>
+                  <li>• Wait a few minutes and check again</li>
+                </ul>
+              </div>
+
+              <div className="mt-8 text-center">
+                <Link 
+                  to="/login" 
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-semibold hover:scale-105 transition-all duration-300"
+                >
+                  Go to Login
+                </Link>
+              </div>
+            </div>
+
+            {/* Back to Home */}
+            <div className="text-center mt-6 sm:mt-8">
+              <Link 
+                to="/" 
+                className="text-sm sm:text-base text-gray-500 hover:text-white transition-colors inline-flex items-center gap-2 group"
+              >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

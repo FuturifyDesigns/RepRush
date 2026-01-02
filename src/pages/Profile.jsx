@@ -97,15 +97,17 @@ export default function Profile() {
         {/* Profile Info */}
         <div className="relative z-10 container mx-auto px-4 mt-12">
           <div className="flex items-end gap-6">
-            {/* Avatar */}
-            <div className={`relative ring-4 ${tier.ring} rounded-full p-1 bg-gray-900`}>
-              <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center`}>
-                <span className="text-5xl font-black text-white">
-                  {profile?.username?.[0]?.toUpperCase() || 'R'}
-                </span>
+            {/* Avatar with Level Badge at Bottom */}
+            <div className="relative">
+              <div className={`relative ring-4 ${tier.ring} rounded-full p-1 bg-gray-900`}>
+                <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center`}>
+                  <span className="text-5xl font-black text-white">
+                    {profile?.username?.[0]?.toUpperCase() || 'R'}
+                  </span>
+                </div>
               </div>
-              {/* Level Badge */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-full border-4 border-gray-900">
+              {/* Level Badge - Moved to Bottom */}
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-orange-500 to-red-600 rounded-full border-4 border-gray-900 shadow-lg">
                 <span className="text-sm font-black text-white">LVL {profile?.level || 1}</span>
               </div>
             </div>

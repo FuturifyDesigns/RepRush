@@ -413,15 +413,20 @@ export default function WorkoutTracker() {
             
             {/* Start Session Button - Only show if exercises have data logged */}
             {totalXP > 0 && !sessionData && (
-              <button
-                onClick={() => setShowSessionModeSelector(true)}
-                className="w-full px-6 py-4 mb-6 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/50 flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Start Session Timer
-              </button>
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowSessionModeSelector(true)}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/50 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Start Session Timer
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  💡 Start a timed session to track your workout and earn bonus XP!
+                </p>
+              </div>
             )}
           </>
         )}
@@ -429,6 +434,15 @@ export default function WorkoutTracker() {
         {/* Complete Workout Button */}
         {activeExercises.length > 0 && (
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
+            {/* Helper message when session not completed */}
+            {!sessionData && totalXP > 0 && (
+              <div className="max-w-4xl mx-auto mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                <p className="text-xs text-orange-400 text-center">
+                  ⚠️ Start a session timer to complete your workout and earn XP
+                </p>
+              </div>
+            )}
+            
             <div className="max-w-4xl mx-auto flex gap-3">
               <button
                 onClick={handleCancel}
@@ -438,7 +452,7 @@ export default function WorkoutTracker() {
               </button>
               <button
                 onClick={handleCompleteWorkout}
-                disabled={loading || totalXP === 0}
+                disabled={loading || !sessionData}
                 className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-orange-500/50"
               >
                 {loading ? (
@@ -446,14 +460,17 @@ export default function WorkoutTracker() {
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Saving...</span>
                   </div>
-                ) : (
+                ) : sessionData ? (
                   <div className="flex items-center justify-center gap-2">
                     <span>Complete Workout</span>
-                    {totalXP > 0 && (
-                      <span className="bg-white/20 px-2 py-1 rounded-full text-sm">
-                        +{totalXP} XP
-                      </span>
-                    )}
+                    <span className="bg-white/20 px-2 py-1 rounded-full text-sm">
+                      +{Math.round(sessionData.totalXP * sessionData.bonusMultiplier)} XP
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Complete Session First</span>
+                    <span className="text-xs opacity-70">Start a timed session to continue</span>
                   </div>
                 )}
               </button>

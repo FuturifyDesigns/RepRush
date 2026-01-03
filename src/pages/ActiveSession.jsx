@@ -91,13 +91,16 @@ export default function ActiveSession() {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault()
-      e.returnValue = 'Session is active! Leaving will pause your timer.'
+      const message = mode === 'challenge' 
+        ? `⏱️ Your ${Math.floor(goalTime / 60)}-minute challenge is still running! Timer: ${formatTime(remaining || elapsed)}. Leave anyway?`
+        : `⏱️ Your workout session is active! Timer: ${formatTime(elapsed)}. Leave anyway?`
+      e.returnValue = message
       return e.returnValue
     }
     
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [])
+  }, [mode, elapsed, goalTime, remaining])
   
   const playTimerSound = () => {
     // Play notification sound (optional)
@@ -260,6 +263,26 @@ export default function ActiveSession() {
       
       {/* Exercise Checklist */}
       <div className="max-w-4xl mx-auto px-4 py-6">
+        
+        {/* Instructions */}
+        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-blue-400 mb-1">How to Complete Your Session</h4>
+              <ol className="text-xs text-gray-400 space-y-1">
+                <li>1. Go do your workout now (leave this page open)</li>
+                <li>2. When you finish an exercise, come back and check it off ✓</li>
+                <li>3. Move to the next exercise and repeat</li>
+                <li>4. When all exercises are done, click "Finish Session"</li>
+              </ol>
+            </div>
+          </div>
+        </div>
         
         {/* Progress */}
         <div className="mb-6">

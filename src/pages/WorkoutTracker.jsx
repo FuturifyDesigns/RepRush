@@ -1,0 +1,314 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../utils/supabase'
+import { useAuthStore } from '../stores/authStore'
+import { calculateLevel, checkLevelUp } from '../utils/xpUtils'
+import ExerciseSelector from '../components/ExerciseSelector'
+import ActiveExerciseCard from '../components/ActiveExerciseCard'
+import WorkoutComplete from '../components/WorkoutComplete'
+
+export default function WorkoutTracker() {
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const [profile, setProfile] = useState(null)
+  const [showExerciseSelector, setShowExerciseSelector] = useState(false)
+  const [activeExercises, setActiveExercises] = useState([])
+  const [exerciseData, setExerciseData] = useState({}) // { exerciseId: { inputs, xp } }
+  const [totalXP, setTotalXP] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [showComplete, setShowComplete] = useState(false)
+  const [workoutResult, setWorkoutResult] = useState(null)
+
+  useEffect(() => {
+    if (user) {
+      loadProfile()
+    }
+  }, [user])
+
+  useEffect(() => {
+    calculateTotalXP()
+  }, [exerciseData])
+
+  const loadProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    }
+  }
+
+  const calculateTotalXP = () => {
+    const total = Object.values(exerciseData).reduce((sum, data) => sum + (data.xp || 0), 0)
+    setTotalXP(total)
+  }
+
+  const handleAddExercise = (exercise) => {
+    if (!activeExercises.find(ex => ex.id === exercise.id)) {
+      setActiveExercises([...activeExercises, exercise])
+    }
+  }
+
+  const handleRemoveExercise = (exerciseId) => {
+    setActiveExercises(activeExercises.filter(ex => ex.id !== exerciseId))
+    const newData = { ...exerciseData }
+    delete newData[exerciseId]
+    setExerciseData(newData)
+  }
+
+  const handleUpdateExercise = (exerciseId, inputs, xp) => {
+    setExerciseData({
+      ...exerciseData,
+      [exerciseId]: { inputs, xp }
+    })
+  }
+
+  const handleCompleteWorkout = async () => {
+    if (activeExercises.length === 0) {
+      alert('Please add at least one exercise')
+      return
+    }
+
+    if (totalXP === 0) {
+      alert('Please log some activity for your exercises')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      // Create workout record
+      const { data: workout, error: workoutError } = await supabase
+        .from('workouts')
+        .insert({
+          user_id: user.id,
+          total_xp: totalXP,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (workoutError) throw workoutError
+
+      // Create workout_exercises records
+      const workoutExercises = activeExercises.map(exercise => {
+        const data = exerciseData[exercise.id] || {}
+        return {
+          workout_id: workout.id,
+          exercise_id: exercise.id,
+          sets: data.inputs?.sets || 0,
+          reps: data.inputs?.reps || 0,
+          weight: data.inputs?.weight || 0,
+          duration: data.inputs?.duration || 0,
+          distance: data.inputs?.distance || 0,
+          xp_earned: data.xp || 0
+        }
+      })
+
+      const { error: exercisesError } = await supabase
+        .from('workout_exercises')
+        .insert(workoutExercises)
+
+      if (exercisesError) throw exercisesError
+
+      // Update profile XP
+      const newTotalXP = profile.total_xp + totalXP
+      const newCurrentXP = profile.current_xp + totalXP
+      const oldLevel = profile.level
+      const newLevel = calculateLevel(newTotalXP)
+      const leveledUp = checkLevelUp(profile.total_xp, newTotalXP)
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          total_xp: newTotalXP,
+          current_xp: newCurrentXP,
+          level: newLevel,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      // Check for achievements (first workout)
+      const { data: existingAchievements } = await supabase
+        .from('user_achievements')
+        .select('achievement_id')
+        .eq('user_id', user.id)
+
+      const hasFirstWorkout = existingAchievements?.some(a => a.achievement_id === 1)
+
+      if (!hasFirstWorkout) {
+        await supabase
+          .from('user_achievements')
+          .insert({
+            user_id: user.id,
+            achievement_id: 1, // "First Workout" achievement
+            unlocked_at: new Date().toISOString()
+          })
+      }
+
+      // Show completion modal
+      setWorkoutResult({
+        totalXP,
+        exerciseCount: activeExercises.length,
+        leveledUp,
+        oldLevel,
+        newLevel
+      })
+      setShowComplete(true)
+
+    } catch (error) {
+      console.error('Error completing workout:', error)
+      alert('Failed to save workout: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCloseComplete = () => {
+    setShowComplete(false)
+    navigate('/profile')
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 pb-20">
+      {/* Modals */}
+      {showExerciseSelector && (
+        <ExerciseSelector
+          onSelect={handleAddExercise}
+          onClose={() => setShowExerciseSelector(false)}
+          selectedExercises={activeExercises}
+        />
+      )}
+
+      {showComplete && workoutResult && (
+        <WorkoutComplete
+          {...workoutResult}
+          onClose={handleCloseComplete}
+        />
+      )}
+
+      {/* Header */}
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/')}
+                className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-2xl font-black text-white">Workout Tracker</h1>
+                <p className="text-sm text-gray-400">Log your exercises and earn XP</p>
+              </div>
+            </div>
+
+            {/* Total XP Badge */}
+            {totalXP > 0 && (
+              <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg shadow-orange-500/50 animate-scaleIn">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span className="text-lg font-black text-white">{totalXP}</span>
+                <span className="text-xs text-white/80">XP</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Add Exercise Button */}
+        {activeExercises.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Start Your Workout</h2>
+            <p className="text-gray-400 mb-6">Add exercises to begin tracking</p>
+            <button
+              onClick={() => setShowExerciseSelector(true)}
+              className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 shadow-lg shadow-orange-500/50"
+            >
+              Add Exercise
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Active Exercises */}
+            <div className="space-y-4 mb-6">
+              {activeExercises.map(exercise => (
+                <ActiveExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  onUpdate={handleUpdateExercise}
+                  onRemove={handleRemoveExercise}
+                />
+              ))}
+            </div>
+
+            {/* Add More Button */}
+            <button
+              onClick={() => setShowExerciseSelector(true)}
+              className="w-full px-6 py-4 bg-white/5 hover:bg-white/10 border-2 border-dashed border-white/20 hover:border-orange-500/50 text-gray-300 hover:text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 mb-6"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Another Exercise
+            </button>
+          </>
+        )}
+
+        {/* Complete Workout Button */}
+        {activeExercises.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
+            <div className="max-w-4xl mx-auto flex gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 rounded-xl font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteWorkout}
+                disabled={loading || totalXP === 0}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-orange-500/50"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <span>Complete Workout</span>
+                    {totalXP > 0 && (
+                      <span className="bg-white/20 px-2 py-1 rounded-full text-sm">
+                        +{totalXP} XP
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

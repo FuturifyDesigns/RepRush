@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { calculateExerciseXP } from '../utils/xpUtils'
 
 export default function ActiveExerciseCard({ exercise, onUpdate, onRemove }) {
+  const category = exercise.category?.toLowerCase()
+  
   const [inputs, setInputs] = useState({
-    sets: exercise.category === 'Strength' ? 3 : 0,
-    reps: exercise.category === 'Strength' ? 10 : 0,
+    sets: category === 'strength' ? 3 : 0,
+    reps: category === 'strength' ? 10 : 0,
     weight: 0,
-    duration: exercise.category === 'Cardio' || exercise.category === 'Flexibility' ? 30 : 0,
+    duration: category === 'cardio' || category === 'flexibility' ? 30 : 0,
     distance: 0,
   })
 
@@ -16,7 +18,7 @@ export default function ActiveExerciseCard({ exercise, onUpdate, onRemove }) {
     const calculatedXP = calculateExerciseXP(exercise, inputs)
     setXp(calculatedXP)
     onUpdate(exercise.id, inputs, calculatedXP)
-  }, [inputs])
+  }, [inputs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (field, value) => {
     setInputs(prev => ({
@@ -25,15 +27,15 @@ export default function ActiveExerciseCard({ exercise, onUpdate, onRemove }) {
     }))
   }
 
-  const isStrength = exercise.category === 'Strength'
-  const isCardio = exercise.category === 'Cardio'
-  const isFlexibility = exercise.category === 'Flexibility'
+  const isStrength = category === 'strength'
+  const isCardio = category === 'cardio'
+  const isFlexibility = category === 'flexibility'
 
   const getCategoryColor = () => {
-    switch (exercise.category) {
-      case 'Strength': return 'from-orange-500 to-red-600'
-      case 'Cardio': return 'from-blue-500 to-cyan-600'
-      case 'Flexibility': return 'from-green-500 to-emerald-600'
+    switch (category) {
+      case 'strength': return 'from-orange-500 to-red-600'
+      case 'cardio': return 'from-blue-500 to-cyan-600'
+      case 'flexibility': return 'from-green-500 to-emerald-600'
       default: return 'from-gray-500 to-gray-600'
     }
   }

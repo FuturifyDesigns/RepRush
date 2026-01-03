@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '../stores/authStore'
 
 export default function Home() {
-  const { user } = useAuthStore()
   const [currentSlide, setCurrentSlide] = useState(0)
 
   // Unsplash fitness images for background slideshow
@@ -88,7 +86,7 @@ export default function Home() {
 
       {/* Content */}
       <div className="relative z-10">
-        {/* Navigation */}
+        {/* Navigation - Simple Sign In Button Only */}
         <nav className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <img src={`${import.meta.env.BASE_URL}reprush-logo.png`} alt="RepRush" className="h-12 w-12 sm:h-16 sm:w-16" />
@@ -97,38 +95,18 @@ export default function Home() {
               <p className="text-[10px] sm:text-xs text-gray-400 tracking-widest uppercase">Level Up Every Rep</p>
             </div>
           </div>
-          
-          {/* NAVIGATION BUTTONS - CONDITIONAL BASED ON AUTH */}
-          {user ? (
-            // LOGGED IN - Show Workout and Profile buttons
-            <div className="flex items-center gap-2">
-              <Link 
-                to="/workout"
-                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full hover:scale-105 transition-all duration-300 shadow-lg shadow-orange-500/50 text-xs sm:text-sm font-bold tracking-wide"
-              >
-                Start Workout
-              </Link>
-              <Link 
-                to="/profile"
-                className="px-4 sm:px-6 py-2 sm:py-2.5 text-white border border-white/30 rounded-full hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-xs sm:text-sm font-medium tracking-wide"
-              >
-                Profile
-              </Link>
-            </div>
-          ) : (
-            // LOGGED OUT - Show Sign In button
-            <Link 
-              to="/login"
-              className="px-4 sm:px-6 py-2 sm:py-2.5 text-white border border-white/30 rounded-full hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-xs sm:text-sm font-medium tracking-wide"
-            >
-              Sign In
-            </Link>
-          )}
+          <Link 
+            to="/login"
+            className="px-4 sm:px-6 py-2 sm:py-2.5 text-white border border-white/30 rounded-full hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-xs sm:text-sm font-medium tracking-wide"
+          >
+            Sign In
+          </Link>
         </nav>
 
         {/* Hero Section */}
         <div className="container mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-20 sm:pb-32">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Main Headline */}
             <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-4 sm:mb-6 leading-none tracking-tighter">
               Rush Through
               <br />
@@ -137,22 +115,21 @@ export default function Home() {
               </span>
             </h1>
 
+            {/* Subheadline */}
             <p className="text-sm sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto font-light leading-relaxed px-2">
               Every rep counts. Earn XP, level up, and compete. Turn your workouts into an epic gaming experience.
             </p>
 
-            {/* MAIN CTA BUTTON - ALWAYS SHOWS "START FREE" WHEN LOGGED OUT */}
-            {!user && (
-              <div className="flex justify-center items-center mb-12 sm:mb-16">
-                <Link
-                  to="/register"
-                  className="group relative px-8 sm:px-12 py-3.5 sm:py-5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg lg:text-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/50"
-                >
-                  <span className="relative z-10">Start Free</span>
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                </Link>
-              </div>
-            )}
+            {/* CTA Button - Start Free */}
+            <div className="flex justify-center items-center mb-12 sm:mb-16">
+              <Link
+                to="/register"
+                className="group relative px-8 sm:px-12 py-3.5 sm:py-5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg lg:text-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/50"
+              >
+                <span className="relative z-10">Start Free</span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              </Link>
+            </div>
 
             {/* Trust Indicators */}
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 lg:gap-8 text-xs sm:text-sm text-gray-400 px-2">
@@ -226,17 +203,15 @@ export default function Home() {
               </div>
             </div>
 
-            {/* BOTTOM CTA BUTTON - ONLY SHOWS IF LOGGED OUT */}
-            {!user && (
-              <div className="text-center mt-8 sm:mt-12 pb-24">
-                <Link
-                  to="/register"
-                  className="inline-block px-8 sm:px-10 lg:px-12 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 shadow-2xl shadow-orange-500/50"
-                >
-                  Start Your Journey Free
-                </Link>
-              </div>
-            )}
+            {/* Bottom CTA */}
+            <div className="text-center mt-8 sm:mt-12 pb-24">
+              <Link
+                to="/register"
+                className="inline-block px-8 sm:px-10 lg:px-12 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 shadow-2xl shadow-orange-500/50"
+              >
+                Start Your Journey Free
+              </Link>
+            </div>
           </div>
         </div>
 

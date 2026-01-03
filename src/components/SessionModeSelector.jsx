@@ -6,14 +6,8 @@ export default function SessionModeSelector({ exercises, exerciseData, onClose, 
   const [selectedMode, setSelectedMode] = useState(null)
   const [customTime, setCustomTime] = useState(15)
   
-  // Debug logging
-  console.log('SessionModeSelector rendered')
-  console.log('Exercises:', exercises)
-  console.log('ExerciseData:', exerciseData)
-  
   // Safety check
   if (!exercises || exercises.length === 0) {
-    console.error('SessionModeSelector: No exercises provided')
     return null
   }
   

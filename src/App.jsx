@@ -19,17 +19,6 @@ function ProtectedRoute({ children }) {
   return children
 }
 
-// Public Route wrapper (redirect to profile if already logged in)
-function PublicRoute({ children }) {
-  const { user } = useAuthStore()
-  
-  if (user) {
-    return <Navigate to="/profile" replace />
-  }
-  
-  return children
-}
-
 function App() {
   const { initialize } = useAuthStore()
   const [initializing, setInitializing] = useState(true)
@@ -59,22 +48,8 @@ function App() {
     <BrowserRouter basename="/RepRush">
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route 
-          path="/login" 
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } 
-        />
-        <Route 
-          path="/register" 
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          } 
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/email-confirmed" element={<EmailConfirmed />} />
         <Route 
           path="/profile" 

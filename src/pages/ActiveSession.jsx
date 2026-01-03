@@ -138,7 +138,6 @@ export default function ActiveSession() {
     }
     setIsPaused(!isPaused)
   }
-  const pauseTimeRef = useRef(0)
   
   const handleFinishSession = async () => {
     // Update session status

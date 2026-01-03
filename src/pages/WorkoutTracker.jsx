@@ -133,11 +133,19 @@ export default function WorkoutTracker() {
       const bonusMultiplier = sessionData?.bonusMultiplier || 1.0
       const finalXP = Math.round(baseXP * bonusMultiplier)
       
+      // Generate workout title
+      const workoutTitle = sessionData?.mode === 'challenge' 
+        ? `${Math.floor(sessionData.goalTime / 60)}-Minute Challenge`
+        : sessionData?.mode === 'free'
+        ? 'Free Session Workout'
+        : 'Quick Workout'
+      
       // Create workout record
       const { data: workout, error: workoutError } = await supabase
         .from('workouts')
         .insert({
           user_id: user.id,
+          title: workoutTitle,
           total_xp: finalXP,
           duration: sessionData?.elapsed || 0,
           session_mode: sessionData?.mode || 'quick',
@@ -222,7 +230,10 @@ export default function WorkoutTracker() {
       })
       setShowComplete(true)
       
-      // Clear session data after saving
+      // Clear workout data after saving
+      setActiveExercises([])
+      setExerciseData({})
+      setTotalXP(0)
       setSessionData(null)
 
     } catch (error) {

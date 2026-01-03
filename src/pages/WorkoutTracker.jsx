@@ -368,7 +368,7 @@ export default function WorkoutTracker() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-32">
         {/* Add Exercise Button */}
         {activeExercises.length === 0 ? (
           <div className="text-center py-12">

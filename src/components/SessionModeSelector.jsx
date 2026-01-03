@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export default function SessionModeSelector({ exercises, onClose, onSkip }) {
+export default function SessionModeSelector({ exercises, exerciseData, onClose, onSkip }) {
   const navigate = useNavigate()
   const [selectedMode, setSelectedMode] = useState(null)
   const [customTime, setCustomTime] = useState(15)
@@ -16,6 +16,7 @@ export default function SessionModeSelector({ exercises, onClose, onSkip }) {
       state: {
         mode: 'challenge',
         exercises,
+        exerciseData,
         goalTime
       }
     })
@@ -25,7 +26,8 @@ export default function SessionModeSelector({ exercises, onClose, onSkip }) {
     navigate('/workout/session', {
       state: {
         mode: 'free',
-        exercises
+        exercises,
+        exerciseData
       }
     })
   }

@@ -6,6 +6,17 @@ export default function SessionModeSelector({ exercises, exerciseData, onClose, 
   const [selectedMode, setSelectedMode] = useState(null)
   const [customTime, setCustomTime] = useState(15)
   
+  // Debug logging
+  console.log('SessionModeSelector rendered')
+  console.log('Exercises:', exercises)
+  console.log('ExerciseData:', exerciseData)
+  
+  // Safety check
+  if (!exercises || exercises.length === 0) {
+    console.error('SessionModeSelector: No exercises provided')
+    return null
+  }
+  
   const estimatedTime = Math.ceil(exercises.length * 5) // Rough estimate: 5 min per exercise
   
   const presetTimes = [10, 15, 20, 30, 45, 60]
@@ -33,8 +44,8 @@ export default function SessionModeSelector({ exercises, exerciseData, onClose, 
   }
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full border border-white/10 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full border border-white/10 max-h-[90vh] overflow-y-auto animate-scaleIn">
         
         {/* Header */}
         <div className="p-6 border-b border-white/10">

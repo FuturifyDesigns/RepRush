@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { calculateLevel, checkLevelUp } from '../utils/xpUtils'
@@ -7,12 +7,15 @@ import ExerciseSelector from '../components/ExerciseSelector'
 import ActiveExerciseCard from '../components/ActiveExerciseCard'
 import WorkoutComplete from '../components/WorkoutComplete'
 import ConfirmDialog from '../components/ConfirmDialog'
+import SessionModeSelector from '../components/SessionModeSelector'
 
 export default function WorkoutTracker() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuthStore()
   const [profile, setProfile] = useState(null)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
+  const [showSessionModeSelector, setShowSessionModeSelector] = useState(false)
   const [activeExercises, setActiveExercises] = useState([])
   const [exerciseData, setExerciseData] = useState({}) // { exerciseId: { inputs, xp } }
   const [totalXP, setTotalXP] = useState(0)
@@ -20,6 +23,7 @@ export default function WorkoutTracker() {
   const [showComplete, setShowComplete] = useState(false)
   const [workoutResult, setWorkoutResult] = useState(null)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [sessionData, setSessionData] = useState(null)
 
   useEffect(() => {
     if (user) {
@@ -30,6 +34,17 @@ export default function WorkoutTracker() {
   useEffect(() => {
     calculateTotalXP()
   }, [exerciseData])
+
+  // Handle session completion from ActiveSession
+  useEffect(() => {
+    if (location.state?.sessionCompleted) {
+      const data = location.state.sessionData
+      setSessionData(data)
+      // Auto-fill exercises from session
+      setActiveExercises(data.exercises)
+      // Show session completion banner
+    }
+  }, [location])
 
   // Warn before leaving page with unsaved workout
   useEffect(() => {
@@ -71,6 +86,19 @@ export default function WorkoutTracker() {
     }
   }
 
+  const handleDoneSelectingExercises = () => {
+    setShowExerciseSelector(false)
+    if (activeExercises.length > 0) {
+      // Show session mode selector
+      setShowSessionModeSelector(true)
+    }
+  }
+
+  const handleSkipSession = () => {
+    setShowSessionModeSelector(false)
+    // Continue with quick log mode
+  }
+
   const handleRemoveExercise = (exerciseId) => {
     setActiveExercises(activeExercises.filter(ex => ex.id !== exerciseId))
     const newData = { ...exerciseData }
@@ -99,12 +127,20 @@ export default function WorkoutTracker() {
     setLoading(true)
 
     try {
+      // Calculate final XP with session bonus
+      const bonusMultiplier = sessionData?.bonusMultiplier || 1.0
+      const finalXP = Math.round(totalXP * bonusMultiplier)
+      
       // Create workout record
       const { data: workout, error: workoutError } = await supabase
         .from('workouts')
         .insert({
           user_id: user.id,
-          total_xp: totalXP,
+          total_xp: finalXP,
+          duration: sessionData?.elapsed || 0,
+          session_mode: sessionData?.mode || 'quick',
+          goal_time: sessionData?.goalTime || 0,
+          completed_in_time: sessionData?.completedInTime || false,
           created_at: new Date().toISOString()
         })
         .select()
@@ -134,8 +170,8 @@ export default function WorkoutTracker() {
       if (exercisesError) throw exercisesError
 
       // Update profile XP
-      const newTotalXP = profile.total_xp + totalXP
-      const newCurrentXP = profile.current_xp + totalXP
+      const newTotalXP = profile.total_xp + finalXP
+      const newCurrentXP = profile.current_xp + finalXP
       const oldLevel = profile.level
       const newLevel = calculateLevel(newTotalXP)
       const leveledUp = checkLevelUp(profile.total_xp, newTotalXP)
@@ -172,13 +208,20 @@ export default function WorkoutTracker() {
 
       // Show completion modal
       setWorkoutResult({
-        totalXP,
+        totalXP: finalXP,
+        baseXP: totalXP,
+        bonusXP: finalXP - totalXP,
         exerciseCount: activeExercises.length,
         leveledUp,
         oldLevel,
-        newLevel
+        newLevel,
+        sessionMode: sessionData?.mode,
+        completedInTime: sessionData?.completedInTime
       })
       setShowComplete(true)
+      
+      // Clear session data after saving
+      setSessionData(null)
 
     } catch (error) {
       console.error('Error completing workout:', error)
@@ -216,8 +259,16 @@ export default function WorkoutTracker() {
       {showExerciseSelector && (
         <ExerciseSelector
           onSelect={handleAddExercise}
-          onClose={() => setShowExerciseSelector(false)}
+          onClose={handleDoneSelectingExercises}
           selectedExercises={activeExercises}
+        />
+      )}
+
+      {showSessionModeSelector && (
+        <SessionModeSelector
+          exercises={activeExercises}
+          onClose={() => setShowSessionModeSelector(false)}
+          onSkip={handleSkipSession}
         />
       )}
 
@@ -240,6 +291,46 @@ export default function WorkoutTracker() {
       {/* Header */}
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-6">
+          
+          {/* Session Completion Banner */}
+          {sessionData && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-green-400 mb-1">
+                    {sessionData.mode === 'challenge' && sessionData.completedInTime
+                      ? '🎉 Challenge Complete! You beat the timer!'
+                      : sessionData.mode === 'challenge'
+                      ? '⏱️ Challenge Complete'
+                      : '✅ Session Complete'
+                    }
+                  </h3>
+                  <div className="text-sm text-gray-400">
+                    Time: {Math.floor(sessionData.elapsed / 60)}:{(sessionData.elapsed % 60).toString().padStart(2, '0')}
+                    {sessionData.bonusMultiplier > 1 && (
+                      <span className="ml-2 text-orange-400 font-bold">
+                        +{Math.round((sessionData.bonusMultiplier - 1) * 100)}% Bonus XP!
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSessionData(null)}
+                  className="text-gray-500 hover:text-gray-400"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button

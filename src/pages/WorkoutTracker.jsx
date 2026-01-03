@@ -127,9 +127,12 @@ export default function WorkoutTracker() {
     setLoading(true)
 
     try {
+      // Use session totalXP if available, otherwise use calculated totalXP
+      const baseXP = sessionData?.totalXP || totalXP
+      
       // Calculate final XP with session bonus
       const bonusMultiplier = sessionData?.bonusMultiplier || 1.0
-      const finalXP = Math.round(totalXP * bonusMultiplier)
+      const finalXP = Math.round(baseXP * bonusMultiplier)
       
       // Create workout record
       const { data: workout, error: workoutError } = await supabase
@@ -209,8 +212,8 @@ export default function WorkoutTracker() {
       // Show completion modal
       setWorkoutResult({
         totalXP: finalXP,
-        baseXP: totalXP,
-        bonusXP: finalXP - totalXP,
+        baseXP: sessionData?.totalXP || totalXP,
+        bonusXP: finalXP - (sessionData?.totalXP || totalXP),
         exerciseCount: activeExercises.length,
         leveledUp,
         oldLevel,
@@ -259,7 +262,7 @@ export default function WorkoutTracker() {
       {showExerciseSelector && (
         <ExerciseSelector
           onSelect={handleAddExercise}
-          onClose={handleDoneSelectingExercises}
+          onClose={() => setShowExerciseSelector(false)}
           selectedExercises={activeExercises}
         />
       )}
@@ -267,6 +270,7 @@ export default function WorkoutTracker() {
       {showSessionModeSelector && (
         <SessionModeSelector
           exercises={activeExercises}
+          exerciseData={exerciseData}
           onClose={() => setShowSessionModeSelector(false)}
           onSkip={handleSkipSession}
         />
@@ -312,9 +316,11 @@ export default function WorkoutTracker() {
                   </h3>
                   <div className="text-sm text-gray-400">
                     Time: {Math.floor(sessionData.elapsed / 60)}:{(sessionData.elapsed % 60).toString().padStart(2, '0')}
+                    {' • '}
+                    Base XP: {sessionData.totalXP}
                     {sessionData.bonusMultiplier > 1 && (
                       <span className="ml-2 text-orange-400 font-bold">
-                        +{Math.round((sessionData.bonusMultiplier - 1) * 100)}% Bonus XP!
+                        → {Math.round(sessionData.totalXP * sessionData.bonusMultiplier)} XP (+{Math.round((sessionData.bonusMultiplier - 1) * 100)}% Bonus!)
                       </span>
                     )}
                   </div>
@@ -404,6 +410,19 @@ export default function WorkoutTracker() {
               </svg>
               Add Another Exercise
             </button>
+            
+            {/* Start Session Button - Only show if exercises have data logged */}
+            {totalXP > 0 && !sessionData && (
+              <button
+                onClick={() => setShowSessionModeSelector(true)}
+                className="w-full px-6 py-4 mb-6 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl font-bold hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/50 flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start Session Timer
+              </button>
+            )}
           </>
         )}
 

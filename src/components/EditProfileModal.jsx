@@ -10,6 +10,7 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
   const [imagePreview, setImagePreview] = useState(profile?.avatar_url || null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState('')
   const fileInputRef = useRef(null)
 
   const handleChange = (e) => {
@@ -23,6 +24,8 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setError(null)
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file')
@@ -35,44 +38,66 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
       return
     }
 
+    setUploadProgress('Processing image...')
+
     // Read and preview image
     const reader = new FileReader()
     reader.onload = (event) => {
       const img = new Image()
       img.onload = () => {
-        // Compress and crop to square
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        
-        // Target size: 200x200 (small for free tier)
-        const targetSize = 200
-        canvas.width = targetSize
-        canvas.height = targetSize
+        try {
+          // Compress and crop to square
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          
+          // Target size: 200x200 (small for free tier)
+          const targetSize = 200
+          canvas.width = targetSize
+          canvas.height = targetSize
 
-        // Calculate crop dimensions (center square crop)
-        const minDim = Math.min(img.width, img.height)
-        const sx = (img.width - minDim) / 2
-        const sy = (img.height - minDim) / 2
+          // Calculate crop dimensions (center square crop)
+          const minDim = Math.min(img.width, img.height)
+          const sx = (img.width - minDim) / 2
+          const sy = (img.height - minDim) / 2
 
-        // Draw cropped and resized image
-        ctx.drawImage(
-          img,
-          sx, sy, minDim, minDim,  // Source crop
-          0, 0, targetSize, targetSize  // Destination
-        )
+          // Draw cropped and resized image
+          ctx.drawImage(
+            img,
+            sx, sy, minDim, minDim,  // Source crop
+            0, 0, targetSize, targetSize  // Destination
+          )
 
-        // Convert to blob with compression (quality: 0.8 for ~10-20KB files)
-        canvas.toBlob(
-          (blob) => {
-            setSelectedImage(blob)
-            setImagePreview(URL.createObjectURL(blob))
-            setError(null)
-          },
-          'image/jpeg',
-          0.8  // Quality: 80%
-        )
+          // Convert to blob with compression (quality: 0.8 for ~10-20KB files)
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                setSelectedImage(blob)
+                setImagePreview(URL.createObjectURL(blob))
+                setUploadProgress('')
+                setError(null)
+                console.log('Image processed successfully:', (blob.size / 1024).toFixed(2), 'KB')
+              } else {
+                setError('Failed to process image')
+                setUploadProgress('')
+              }
+            },
+            'image/jpeg',
+            0.8  // Quality: 80%
+          )
+        } catch (err) {
+          setError('Failed to process image: ' + err.message)
+          setUploadProgress('')
+        }
+      }
+      img.onerror = () => {
+        setError('Failed to load image')
+        setUploadProgress('')
       }
       img.src = event.target.result
+    }
+    reader.onerror = () => {
+      setError('Failed to read file')
+      setUploadProgress('')
     }
     reader.readAsDataURL(file)
   }
@@ -83,46 +108,69 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    setError(null)
   }
 
   const uploadAvatar = async (userId) => {
     if (!selectedImage) return profile?.avatar_url
 
+    setUploadProgress('Uploading image...')
+    
     const fileName = `${userId}-${Date.now()}.jpg`
     const filePath = `${fileName}`
 
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, selectedImage, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: 'image/jpeg'
-      })
+    console.log('Uploading to:', filePath)
 
-    if (uploadError) throw uploadError
+    try {
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, selectedImage, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/jpeg'
+        })
 
-    // Get public URL
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath)
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw new Error(`Upload failed: ${uploadError.message}`)
+      }
 
-    return data.publicUrl
+      console.log('Upload successful:', uploadData)
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      console.log('Public URL:', urlData.publicUrl)
+      setUploadProgress('Image uploaded!')
+
+      return urlData.publicUrl
+    } catch (err) {
+      console.error('Upload avatar error:', err)
+      throw err
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setUploadProgress('')
 
     try {
       // Upload avatar if changed
       let avatarUrl = profile?.avatar_url
+      
       if (selectedImage) {
+        setUploadProgress('Uploading...')
         avatarUrl = await uploadAvatar(profile.id)
       } else if (imagePreview === null) {
         avatarUrl = null
       }
+
+      setUploadProgress('Saving profile...')
 
       // Update profile
       const { data, error: updateError } = await supabase
@@ -137,13 +185,24 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
         .select()
         .single()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('Profile update error:', updateError)
+        throw new Error(`Failed to update profile: ${updateError.message}`)
+      }
 
+      console.log('Profile updated successfully:', data)
+      setUploadProgress('Success!')
+      
       onUpdate(data)
-      onClose()
+      
+      // Small delay to show success message
+      setTimeout(() => {
+        onClose()
+      }, 500)
     } catch (err) {
       console.error('Error updating profile:', err)
-      setError(err.message)
+      setError(err.message || 'Failed to update profile')
+      setUploadProgress('')
     } finally {
       setLoading(false)
     }
@@ -160,7 +219,8 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
             <h2 className="text-xl sm:text-2xl font-bold text-white">Edit Profile</h2>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+              disabled={loading}
+              className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -175,6 +235,13 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
           {error && (
             <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm">
               {error}
+            </div>
+          )}
+
+          {/* Progress Message */}
+          {uploadProgress && (
+            <div className="bg-blue-500/10 border border-blue-500/50 text-blue-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm">
+              {uploadProgress}
             </div>
           )}
 
@@ -197,7 +264,8 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg"
+                      disabled={loading}
+                      className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors shadow-lg disabled:opacity-50"
                     >
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -220,12 +288,15 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
                   type="file"
                   accept="image/*"
                   onChange={handleImageSelect}
+                  disabled={loading}
                   className="hidden"
                   id="avatar-upload"
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="inline-block px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:scale-105 text-white rounded-xl font-medium cursor-pointer transition-all shadow-lg"
+                  className={`inline-block px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-medium cursor-pointer transition-all shadow-lg ${
+                    loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
+                  }`}
                 >
                   {imagePreview ? 'Change Photo' : 'Upload Photo'}
                 </label>
@@ -246,6 +317,7 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
               name="username"
               value={formData.username}
               onChange={handleChange}
+              disabled={loading}
               className="input"
               placeholder="Enter username"
               required
@@ -266,6 +338,7 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
               name="bio"
               value={formData.bio}
               onChange={handleChange}
+              disabled={loading}
               className="input min-h-[80px] resize-none"
               placeholder="Tell us about yourself..."
               maxLength={150}
@@ -280,7 +353,8 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl font-medium transition-all border border-white/10 text-sm sm:text-base"
+              disabled={loading}
+              className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl font-medium transition-all border border-white/10 text-sm sm:text-base disabled:opacity-50"
             >
               Cancel
             </button>

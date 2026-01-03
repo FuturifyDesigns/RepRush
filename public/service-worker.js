@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reprush-v8'
+const CACHE_NAME = 'reprush-v9'
 const urlsToCache = [
   '/RepRush/',
   '/RepRush/index.html',

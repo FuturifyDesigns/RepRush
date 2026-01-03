@@ -433,17 +433,18 @@ export default function WorkoutTracker() {
 
         {/* Complete Workout Button */}
         {activeExercises.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
-            {/* Helper message when session not completed */}
-            {!sessionData && totalXP > 0 && (
-              <div className="max-w-4xl mx-auto mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                <p className="text-xs text-orange-400 text-center">
-                  ⚠️ Start a session timer to complete your workout and earn XP
-                </p>
-              </div>
-            )}
-            
-            <div className="max-w-4xl mx-auto flex gap-3">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900 border-t border-white/10 shadow-2xl">
+            <div className="max-w-4xl mx-auto p-4">
+              {/* Helper message when session not completed */}
+              {!sessionData && totalXP > 0 && (
+                <div className="mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <p className="text-xs text-orange-400 text-center">
+                    ⚠️ Start a session timer to complete your workout and earn XP
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
               <button
                 onClick={handleCancel}
                 className="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 rounded-xl font-medium transition-all"
@@ -474,6 +475,7 @@ export default function WorkoutTracker() {
                   </div>
                 )}
               </button>
+              </div>
             </div>
           </div>
         )}

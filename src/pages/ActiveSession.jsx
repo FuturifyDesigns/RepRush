@@ -16,6 +16,24 @@ export default function ActiveSession() {
   const [sessionId, setSessionId] = useState(null)
   const timerRef = useRef(null)
   const startTimeRef = useRef(Date.now())
+  const pauseTimeRef = useRef(0)
+  
+  // Helper function - defined before use
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+  
+  // Calculate remaining time for challenge mode
+  const remaining = mode === 'challenge' ? Math.max(0, (goalTime || 0) - elapsed) : null
+  const isTimeUp = mode === 'challenge' && elapsed >= (goalTime || 0)
+  const progress = exercises ? (completedExercises.length / exercises.length) * 100 : 0
   
   // Redirect if no exercises
   useEffect(() => {
@@ -27,7 +45,7 @@ export default function ActiveSession() {
   // Create session in database
   useEffect(() => {
     const createSession = async () => {
-      if (!user || sessionId) return
+      if (!user || sessionId || !exercises) return
       
       const { data, error } = await supabase
         .from('workout_sessions')
@@ -169,21 +187,6 @@ export default function ActiveSession() {
       setCompletedExercises([...completedExercises, exerciseId])
     }
   }
-  
-  const formatTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600)
-    const mins = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-  
-  const remaining = mode === 'challenge' ? Math.max(0, goalTime - elapsed) : null
-  const isTimeUp = mode === 'challenge' && elapsed >= goalTime
-  const progress = (completedExercises.length / exercises.length) * 100
   
   if (!exercises) return null
   

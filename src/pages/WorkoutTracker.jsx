@@ -6,6 +6,7 @@ import { calculateLevel, checkLevelUp } from '../utils/xpUtils'
 import ExerciseSelector from '../components/ExerciseSelector'
 import ActiveExerciseCard from '../components/ActiveExerciseCard'
 import WorkoutComplete from '../components/WorkoutComplete'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function WorkoutTracker() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ export default function WorkoutTracker() {
   const [loading, setLoading] = useState(false)
   const [showComplete, setShowComplete] = useState(false)
   const [workoutResult, setWorkoutResult] = useState(null)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -193,12 +195,19 @@ export default function WorkoutTracker() {
 
   const handleCancel = () => {
     if (activeExercises.length > 0) {
-      if (window.confirm('You have unsaved exercises. Are you sure you want to cancel this workout?')) {
-        navigate('/profile')
-      }
+      setShowConfirmDialog(true)
     } else {
       navigate('/profile')
     }
+  }
+
+  const handleConfirmDiscard = () => {
+    setShowConfirmDialog(false)
+    navigate('/profile')
+  }
+
+  const handleCancelDiscard = () => {
+    setShowConfirmDialog(false)
   }
 
   return (
@@ -218,6 +227,15 @@ export default function WorkoutTracker() {
           onClose={handleCloseComplete}
         />
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onConfirm={handleConfirmDiscard}
+        onCancel={handleCancelDiscard}
+        title="Discard Workout?"
+        message="You have unsaved exercises. If you leave now, all your progress will be lost."
+      />
 
       {/* Header */}
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-b border-white/10">

@@ -29,6 +29,20 @@ export default function WorkoutTracker() {
     calculateTotalXP()
   }, [exerciseData])
 
+  // Warn before leaving page with unsaved workout
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (activeExercises.length > 0 && !showComplete) {
+        e.preventDefault()
+        e.returnValue = 'You have an unsaved workout. Are you sure you want to leave?'
+        return e.returnValue
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [activeExercises, showComplete])
+
   const loadProfile = async () => {
     try {
       const { data, error } = await supabase
@@ -177,6 +191,16 @@ export default function WorkoutTracker() {
     navigate('/profile')
   }
 
+  const handleCancel = () => {
+    if (activeExercises.length > 0) {
+      if (window.confirm('You have unsaved exercises. Are you sure you want to cancel this workout?')) {
+        navigate('/profile')
+      }
+    } else {
+      navigate('/profile')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
       {/* Modals */}
@@ -201,7 +225,7 @@ export default function WorkoutTracker() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={handleCancel}
                 className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
               >
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,7 +303,7 @@ export default function WorkoutTracker() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent">
             <div className="max-w-4xl mx-auto flex gap-3">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={handleCancel}
                 className="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 rounded-xl font-medium transition-all"
               >
                 Cancel

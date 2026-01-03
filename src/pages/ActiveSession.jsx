@@ -8,7 +8,7 @@ export default function ActiveSession() {
   const location = useLocation()
   const { user } = useAuthStore()
   
-  const { mode, exercises, goalTime } = location.state || {}
+  const { mode, exercises, goalTime, exerciseData } = location.state || {}
   
   const [elapsed, setElapsed] = useState(0) // seconds
   const [isPaused, setIsPaused] = useState(false)
@@ -135,6 +135,9 @@ export default function ActiveSession() {
     localStorage.removeItem('activeSessionId')
     localStorage.removeItem('sessionStartTime')
     
+    // Calculate total XP from exercise data
+    const totalXP = Object.values(exerciseData || {}).reduce((sum, data) => sum + (data.xp || 0), 0)
+    
     // Calculate results
     const completedInTime = mode === 'challenge' ? elapsed <= goalTime : false
     const bonusMultiplier = completedInTime ? 1.2 : 1.0
@@ -149,7 +152,8 @@ export default function ActiveSession() {
           goalTime,
           completedInTime,
           bonusMultiplier,
-          exercises: completedExercises.length > 0 ? completedExercises : exercises
+          totalXP,
+          exercises
         }
       }
     })
@@ -279,6 +283,8 @@ export default function ActiveSession() {
         <div className="space-y-3">
           {exercises.map((exercise, index) => {
             const isCompleted = completedExercises.includes(exercise.id)
+            const exData = exerciseData?.[exercise.id]
+            const xp = exData?.xp || 0
             
             return (
               <div
@@ -292,7 +298,7 @@ export default function ActiveSession() {
               >
                 <div className="flex items-center gap-4">
                   {/* Checkbox */}
-                  <div className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-all ${
+                  <div className={`w-8 h-8 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                     isCompleted
                       ? 'border-green-500 bg-green-500'
                       : 'border-white/30'
@@ -309,20 +315,36 @@ export default function ActiveSession() {
                     <h3 className={`font-bold mb-1 ${isCompleted ? 'text-white line-through' : 'text-white'}`}>
                       {exercise.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-xs mb-2">
                       <span className="px-2 py-1 bg-white/10 rounded-full text-gray-400">
                         {exercise.category}
                       </span>
                       <span className="text-gray-500 capitalize">{exercise.difficulty}</span>
                     </div>
+                    {/* Show logged data */}
+                    {exData?.inputs && (
+                      <div className="text-xs text-gray-500">
+                        {exData.inputs.sets > 0 && <span>{exData.inputs.sets} sets × {exData.inputs.reps} reps</span>}
+                        {exData.inputs.weight > 0 && <span> × {exData.inputs.weight}kg</span>}
+                        {exData.inputs.duration > 0 && <span>{exData.inputs.duration} min</span>}
+                        {exData.inputs.distance > 0 && <span> • {exData.inputs.distance}km</span>}
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Status */}
-                  {isCompleted && (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">
-                      ✓ DONE
-                    </span>
-                  )}
+                  {/* XP & Status */}
+                  <div className="text-right flex-shrink-0">
+                    {xp > 0 && (
+                      <div className="text-orange-400 font-bold mb-1">
+                        {xp} XP
+                      </div>
+                    )}
+                    {isCompleted && (
+                      <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full inline-block">
+                        ✓ DONE
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )

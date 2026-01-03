@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 import WorkoutTracker from './pages/WorkoutTracker'
+import ActiveSession from './pages/ActiveSession'
 import EmailConfirmed from './pages/EmailConfirmed'
 
 // Protected Route wrapper
@@ -64,6 +65,14 @@ function App() {
           element={
             <ProtectedRoute>
               <WorkoutTracker />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/workout/session" 
+          element={
+            <ProtectedRoute>
+              <ActiveSession />
             </ProtectedRoute>
           } 
         />

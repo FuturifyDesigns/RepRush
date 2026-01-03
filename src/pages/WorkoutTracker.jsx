@@ -119,7 +119,9 @@ export default function WorkoutTracker() {
       return
     }
 
-    if (totalXP === 0) {
+    // Check if session has XP or local exercises have XP
+    const baseXP = sessionData?.totalXP || totalXP
+    if (baseXP === 0) {
       alert('Please log some activity for your exercises')
       return
     }
@@ -127,9 +129,6 @@ export default function WorkoutTracker() {
     setLoading(true)
 
     try {
-      // Use session totalXP if available, otherwise use calculated totalXP
-      const baseXP = sessionData?.totalXP || totalXP
-      
       // Calculate final XP with session bonus
       const bonusMultiplier = sessionData?.bonusMultiplier || 1.0
       const finalXP = Math.round(baseXP * bonusMultiplier)

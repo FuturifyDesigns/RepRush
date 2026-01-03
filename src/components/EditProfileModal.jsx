@@ -67,9 +67,6 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
             setSelectedImage(blob)
             setImagePreview(URL.createObjectURL(blob))
             setError(null)
-            
-            // Show file size
-            console.log(`Optimized image size: ${(blob.size / 1024).toFixed(2)} KB`)
           },
           'image/jpeg',
           0.8  // Quality: 80%
@@ -155,16 +152,12 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl shadow-2xl w-full max-w-lg border border-white/10 my-8 max-h-[90vh] overflow-y-auto">
-        {/* Header - WITH VERSION BADGE */}
+        {/* Header */}
         <div className="sticky top-0 z-10 bg-gradient-to-br from-gray-800 to-gray-900 border-b border-white/10 p-4 sm:p-6 rounded-t-3xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-transparent rounded-bl-full" />
           
           <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Edit Profile</h2>
-              {/* VERSION BADGE - IF YOU SEE THIS, NEW VERSION IS LOADED! */}
-              <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">v2.0</span>
-            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">Edit Profile</h2>
             <button
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
@@ -236,11 +229,8 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
                 >
                   {imagePreview ? 'Change Photo' : 'Upload Photo'}
                 </label>
-                <p className="text-xs text-gray-500 mt-2">
-                  Max 5MB. Auto-cropped to 200×200px
-                </p>
-                <p className="text-xs text-green-400 mt-1">
-                  ✓ Optimized: ~10-20KB per image
+                <p className="text-xs text-gray-400 mt-2">
+                  JPG, PNG or GIF. Max 5MB
                 </p>
               </div>
             </div>
@@ -282,13 +272,6 @@ export default function EditProfileModal({ profile, onClose, onUpdate }) {
             />
             <p className="text-xs text-gray-500 mt-1 text-right">
               {formData.bio?.length || 0}/150
-            </p>
-          </div>
-
-          {/* Info Box - CLEARLY STATES THIS IS UPLOAD VERSION */}
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-            <p className="text-xs text-blue-300">
-              <strong>💡 IMAGE UPLOAD VERSION:</strong> Images are automatically compressed to ~10-20KB (200×200px). Can store 10,000+ avatars on free tier!
             </p>
           </div>
 

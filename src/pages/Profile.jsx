@@ -40,6 +40,12 @@ export default function Profile() {
     }
   }
 
+  const handleStartWorkout = () => {
+    console.log('Start Workout button clicked!')
+    console.log('Navigating to /workout')
+    navigate('/workout')
+  }
+
   const handleLogout = async () => {
     await logout()
     navigate('/')
@@ -117,12 +123,6 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate('/workout')}
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:scale-105 text-white rounded-full font-bold transition-all duration-300 shadow-lg shadow-orange-500/50"
-              >
-                Start Workout
-              </button>
               <button 
                 onClick={handleLogout}
                 className="px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium transition-all duration-300"
@@ -252,7 +252,7 @@ export default function Profile() {
               <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-4">
                 <button 
-                  onClick={() => navigate('/workout')}
+                  onClick={handleStartWorkout}
                   className="group relative overflow-hidden bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-left hover:scale-105 transition-all"
                 >
                   <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform" />

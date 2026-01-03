@@ -27,6 +27,19 @@
     <!-- Title -->
     <title>RepRush - Level Up Every Rep</title>
     
+    <!-- URL Normalization - Ensure consistent trailing slash -->
+    <script type="text/javascript">
+      (function() {
+        var path = window.location.pathname;
+        var base = '/RepRush';
+        
+        // Always redirect to version WITH trailing slash for base path
+        if (path === base) {
+          window.location.replace(base + '/' + window.location.search + window.location.hash);
+        }
+      })();
+    </script>
+    
     <!-- React Router Fix for GitHub Pages -->
     <script type="text/javascript">
       (function(l) {
